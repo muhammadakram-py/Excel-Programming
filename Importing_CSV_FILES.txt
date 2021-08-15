@@ -1,0 +1,173 @@
+Sub m1_ImportXXXCSVFiles()
+
+
+ActiveWorkbook.Unprotect "XXXX"
+    Dim wb_main As Workbook
+    Dim f1_path As String
+    Dim f1_fileName As String
+    Dim f1_outputSheet As String
+    Dim f1_columnName As String
+    Dim f1_rowNumber As String
+    Dim f2_path As String
+    Dim f2_fileName As String
+    Dim f2_outputSheet As String
+    Dim f2_columnName As String
+    Dim f2_rowNumber As String
+        
+    Sheets("XXXX").Select
+    Application.ScreenUpdating = False
+
+    Set wb_main = ActiveWorkbook
+    
+    Repeat = 4
+    f1_path = Sheets("XXXX").Range("B" & Repeat).Value 
+    f1_fileName = Sheets("XXXX").Range("C" & Repeat).Value 
+    f1_outputSheet = Sheets("XXXX").Range("D" & Repeat).Value 
+    f1_columnName = Sheets("XXXX").Range("E" & Repeat).Value 
+    f1_rowNumber = Sheets("XXXX").Range("F" & Repeat).Value 
+    
+    Repeat = 5
+    f2_path = Sheets("XXXX").Range("B" & Repeat).Value 
+    f2_fileName = Sheets("XXXX").Range("C" & Repeat).Value 
+    f2_outputSheet = Sheets("XXXX").Range("D" & Repeat).Value 
+    f2_columnName = Sheets("XXXX").Range("E" & Repeat).Value 
+    f2_rowNumber = Sheets("XXXX").Range("F" & Repeat).Value 
+   
+
+
+    If f1_fileName = f2_fileName Then
+        MsgBox "Error : Similar_File_Names"
+    ElseIf f1_path = "" Or f2_path = "" Or f1_fileName = "" Or f2_fileName = "" Then
+        MsgBox "Error : Missing_Fields"
+    ElseIf InStr(1, f1_path, "\") < 1 Then
+        MsgBox "Error : File 1 path not found"
+    ElseIf InStr(1, f2_path, "\") < 1 Then
+        MsgBox "Error : File 2 path not found"
+    ElseIf InStr(1, f1_fileName, ".csv") < 1 Then
+        MsgBox "Error : File 1 extension is missing"
+    ElseIf InStr(1, f2_fileName, ".csv") < 1 Then
+        MsgBox "Error : File 2 extension is missing"
+    Else
+        Application.ScreenUpdating = False
+    
+        
+        wb_main.Activate
+        Sheets("ABC").Visible = True
+        Sheets("ABC").Activate
+        Sheets("ABC").Cells.Clear
+
+        
+        On Error GoTo Errhandler
+        Application.CutCopyMode = False
+        With Sheets(f1_outputSheet).QueryTables.Add(Connection:="TEXT;" + f1_path + "\" + f1_fileName, Destination:=Sheets(f1_outputSheet).Range(f1_columnName + f1_rowNumber))
+            .FieldNames = True
+            .RowNumbers = False
+            .FillAdjacentFormulas = False
+            .PreserveFormatting = True
+            .RefreshOnFileOpen = False
+            .RefreshStyle = xlInsertDeleteCells
+            .SavePassword = False
+            .SaveData = True
+            .AdjustColumnWidth = True
+            .RefreshPeriod = 0
+            .TextFilePromptOnRefresh = False
+            '.TextFilePlatform = 437
+            .TextFileStartRow = 1
+            .TextFileParseType = xlDelimited
+            .TextFileTextQualifier = xlTextQualifierNone
+            .TextFileConsecutiveDelimiter = False
+            .TextFileTabDelimiter = False
+            .TextFileSemicolonDelimiter = False
+            .TextFileCommaDelimiter = True
+            .TextFileSpaceDelimiter = False
+            .TextFileTrailingMinusNumbers = True
+            .Refresh BackgroundQuery:=False
+        End With
+        On Error GoTo 0
+    
+        wb_main.Activate
+        Sheets("DEF").Visible = True
+        Sheets("DEF").Activate
+        Sheets("DEF").Cells.Clear
+    
+         On Error GoTo Errhandler
+        Application.CutCopyMode = False
+        With Sheets(f2_outputSheet).QueryTables.Add(Connection:="TEXT;" + f2_path + "\" + f2_fileName, Destination:=Sheets(f2_outputSheet).Range(f2_columnName + f2_rowNumber))
+            .FieldNames = True
+            .RowNumbers = False
+            .FillAdjacentFormulas = False
+            .PreserveFormatting = True
+            .RefreshOnFileOpen = False
+            .RefreshStyle = xlInsertDeleteCells
+            .SavePassword = False
+            .SaveData = True
+            .AdjustColumnWidth = True
+            .RefreshPeriod = 0
+            .TextFilePromptOnRefresh = False
+            .TextFilePlatform = 437
+            .TextFileStartRow = 1
+            .TextFileParseType = xlDelimited
+            .TextFileTextQualifier = xlTextQualifierNone
+            .TextFileConsecutiveDelimiter = False
+            .TextFileTabDelimiter = False
+            .TextFileSemicolonDelimiter = False
+            .TextFileCommaDelimiter = True
+            .TextFileSpaceDelimiter = False
+            .TextFileTrailingMinusNumbers = True
+            .Refresh BackgroundQuery:=False
+        End With
+        On Error GoTo 0
+
+        Sheets("ABC").Select
+        Columns("G:I").Select
+        Selection.Replace What:=".", Replacement:=",", LookAt:=xlPart, _
+            SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
+            ReplaceFormat:=False
+    
+
+        Sheets("DEF").Select
+        Columns("K:BT").Select
+        Selection.Replace What:=".", Replacement:=",", LookAt:=xlPart, _
+            SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
+            ReplaceFormat:=False
+        Range("A7").Select
+        ActiveWindow.LargeScroll Down:=1
+        Range("A45").Select
+        ActiveCell.FormulaR1C1 = ""
+        Range("A7").Select
+        ActiveCell.FormulaR1C1 = "=CONCATENATE(RC[2],RC[9])"
+        Range("A7").Select
+        Selection.AutoFill Destination:=Range("A7:A2310")
+        Range("A7:A2310").Select
+
+        Sheets("ABC").Select
+        ActiveWindow.SelectedSheets.Visible = False
+        Sheets("DEF").Select
+        ActiveWindow.SelectedSheets.Visible = False
+        Sheets("XXXX").Select
+
+        MsgBox "Done"
+
+    End If
+    
+    Dim wbConnections As WorkbookConnection
+    For Each wbConnections In ActiveWorkbook.Connections
+        If InStr(fileName, wbConnections.Name) > 0 Then
+            wbConnections.Delete
+        End If
+    Next wbConnections
+
+Errhandler:
+    If Err.Number <> 0 Then
+        Err.Clear
+        On Error GoTo 0
+        'Error handling.....
+        MsgBox ("Error opening workbook! Try again later")
+        'STEP last: Unhiding Sheets
+        Sheets("XXXX").Select
+        Sheets("ABC").Visible = False
+        Sheets("DEF").Visible = False
+    End If
+    
+    Application.ScreenUpdating = True
+End Sub
